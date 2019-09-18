@@ -1,0 +1,13 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["gts/tslint.json", "tslint-config-prettier"],
+  "rules": {
+    "no-console": [true, "debug", "info", "time", "timeEnd", "trace"],
+    "object-literal-shorthand": false,
+    "max-classes-per-file": false,
+    "curly": true,
+    "no-any": false,
+    "trailing-comma": false,
+    "max-line-length": [true, 140]
+  }
+}
