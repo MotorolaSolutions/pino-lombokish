@@ -5,6 +5,8 @@ node_js:
   - "12"
   - "lts/*"
 
+cache: npm
+
 jobs:
   include:
     - stage: npm release

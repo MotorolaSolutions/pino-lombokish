@@ -54,10 +54,11 @@
     "pino-pretty": "^3.2.1"
   },
   "jest": {
+    "testEnvironment": "node",
     "preset": "ts-jest",
     "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/build/"
+      "<rootDir>/node_modules/",
+      "<rootDir>/build/"
     ],
     "watchPathIgnorePatterns": [
       "<rootDir>/node_modules",
@@ -69,17 +70,20 @@
       "default",
       "jest-junit"
     ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/node_modules/",
+      "<rootDir>/build/"
+    ],
     "collectCoverageFrom": [
-      "src/**/*.ts",
-      "!src/**/*.spec.ts",
-      "!src/**/index.ts",
-      "!src/example/*.ts"
+      "<rootDir>/src/**/*.ts",
+      "!<rootDir>/src/**/*.spec.ts",
+      "!<rootDir>/src/**/index.ts",
+      "!<rootDir>/src/example/*.ts"
     ],
     "coverageReporters": [
       "cobertura",
       "lcov"
-    ],
-    "testEnvironment": "node"
+    ]
   },
   "jest-junit": {
     "suiteName": "Pino Lombokish",
