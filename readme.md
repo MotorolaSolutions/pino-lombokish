@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MotorolaSolutions/pino-lombokish.svg?branch=master)](https://travis-ci.org/MotorolaSolutions/pino-lombokish)
+
 # Pino Lombok(ish)
 
 Lombok(ish) wrapper which allows for simple pino logger creation as class member (or module variable)
@@ -103,11 +105,11 @@ app.use(LoggerFactory.createHttpLoggerMiddleware(config));
 app.listen(3000);
 ```
 
-### **Note** HTTP Middleware class name is hard coded to 'http'
+> **Note** HTTP Middleware class name is hard coded to 'http'
 
 ### By Default HTTP Logger Logs any request containing "_/health_" as TRACE
 
-(To Get rid of Kubernetes Health check logs)
+To Get rid of Kubernetes Health check logs
 
 ### By Default HTTP Logger will redact
 
