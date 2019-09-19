@@ -10,7 +10,6 @@ cache: npm
 jobs:
   include:
     - stage: npm release
-      if: branch = master
       node_js: "lts/*"
       script: echo "Deploying to npm ..."
       deploy:
