@@ -1,6 +1,6 @@
 {
   "name": "pino-lombokish",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility Logger Package which allows faster logger bootstrapping and usage",
   "main": "build/index.js",
   "types": "build/index.d.ts",
