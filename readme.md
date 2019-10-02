@@ -143,7 +143,7 @@ app.use(LoggerFactory.createHttpLoggerMiddleware(pinoConfig, pinoHttpOptions));
 
 <a  id="LevelChanger"></a>
 ## Level Changer
-The pino-lombokish package implements Level Changer functionality which allows users to change logger level at runtime.
+pino-lombokish package implements Level Changer functionality which allows users to change logger level at runtime.
 ### Configuration
 #### `main.ts`
 ```typescript
@@ -172,6 +172,40 @@ LoggerFactory.forRoot({
 - If provided file does not exist Level Changer will check for its existence every 10s.
 - Once the file is created Level Changer will subscribe to its changes
 - When the file is removed Level Changer will start checking for its existence every 10s (again)
+
+<a id="SensitiveLogging"></a>
+## Marking Sensitive Logs (optional)
+pino-lombokish package implements sensitive logging bindings.
+
+> **This feature is not meant to redact logs.**
+>  - It is meant for log forwarders in PaaS systems (i.e splunk-forwader or fluentd).
+>  - Log forwarders send logs to aggregators (i.e kibana)
+>  - Log forwarders can be configured to look for specific properties in logs
+>    - If property is present then send to specific aggregators only (i.e. aggregators which store sensitive logs only)
+>    - If property is not present then send to all aggregators
+
+### Default Configuration
+```typescript
+LoggerFactory.forRoot({
+  sensitive: true
+})
+
+const logger = LoggerFactory.createLogger('withDefaultSensitiveBindings');
+logger.sensitive.info('Will add { isSensitive: true } to log')
+```
+
+### User Provided Configuration
+```typescript
+LoggerFactory.forRoot({
+  sensitive: {
+    sensitiveName: 'sensitiveLog',
+    sensitiveValue: 'yes'
+  }
+})
+
+const logger = LoggerFactory.createLogger('withUserSensitiveBindings');
+logger.sensitive.info('Will add { sensitiveLog: "yes" } to log')
+```
 
 <a  id="DefaultConfigurations"></a>
 ## Default Configurations
@@ -204,6 +238,13 @@ export  const  DEFAULT_MIDDLEWARE_CONFIG: pino.LoggerOptions = {
 const  options: pinoHttp.Options = {
   customLogLevel:  logHealthAsTrace,
   serializers: { req:  redactAccessTokenFromPath }
+};
+```
+### Sensitive Config
+```typescript
+export const DEFAULT_SENSITIVE_CONFIG = {
+  sensitiveName: 'isSensitive',
+  sensitiveValue: true
 };
 ```
 

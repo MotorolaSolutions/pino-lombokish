@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import { LoggerOptions, levels } from 'pino';
+import { levels, LoggerOptions } from 'pino';
 
 const defaultInfoLevel = levels && levels.values && levels.values['info'] ? levels.values['info'] : 30;
 const defaultTraceLevel = levels && levels.values && levels.values['trace'] ? levels.values['trace'] : 10;
@@ -36,4 +36,9 @@ export const DEFAULT_LOGGER_CONFIG: LoggerOptions = {
     log: defaultInfoLevel,
     verbose: defaultTraceLevel
   }
+};
+
+export const DEFAULT_SENSITIVE_CONFIG = {
+  sensitiveName: 'isSensitive',
+  sensitiveValue: true
 };

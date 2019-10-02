@@ -27,3 +27,4 @@
 export * from './app.logger.options';
 export * from './app.logger';
 export * from './level.changer.config';
+export * from './sensitive.config';

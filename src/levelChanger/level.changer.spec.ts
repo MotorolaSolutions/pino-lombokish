@@ -72,7 +72,7 @@ describe('Level Changer', () => {
       (changer as any).handleChangeEvt = jest.fn();
     });
 
-    it('Should intialize', () => {
+    it('Should initialize', () => {
       NODE_WATCH_MOCK.mockReturnValue(watcherMock);
       changer.initialize();
       expect(NODE_WATCH_MOCK).toHaveBeenCalledTimes(1);
@@ -127,6 +127,31 @@ describe('Level Changer', () => {
     });
   });
 
+  describe('File Removed', () => {
+    it('Should restart watcher upon file remove', async done => {
+      const changeTrigger = async () => {
+        await (changer as any).handleChangeEvt('remove', config.path);
+      };
+
+      await changeTrigger();
+      expect(setTimeout).toHaveBeenCalledTimes(1);
+      done();
+    });
+  });
+
+  describe('Unknown event', () => {
+    it('Should ignore unknown event', async done => {
+      const changeTrigger = async () => {
+        await (changer as any).handleChangeEvt('unknown', config.path);
+      };
+
+      await changeTrigger();
+      expect(setTimeout).toHaveBeenCalledTimes(0);
+      expect(FS_MOCK.readFile).toHaveBeenCalledTimes(0);
+      done();
+    });
+  });
+
   describe('Level changes', () => {
     let parseSpy: jest.SpyInstance;
     let validateSpy: jest.SpyInstance;
@@ -136,7 +161,7 @@ describe('Level Changer', () => {
       PINO_LOGGER_MOCK.level = 'fatal';
       parseSpy = jest.spyOn(JSON, 'parse');
       validateSpy = jest.spyOn(schema, 'validate');
-      changeTrigger = async (name: string) => {
+      changeTrigger = async () => {
         await (changer as any).handleChangeEvt('update', config.path);
       };
       done();
@@ -165,7 +190,7 @@ describe('Level Changer', () => {
         cb(null, Buffer.from('abcd'));
       });
 
-      await changeTrigger('File Read OK, wrong JSON');
+      await changeTrigger();
       expect(FS_MOCK.readFile).toHaveBeenCalledTimes(1);
       expect(FS_MOCK.readFile).toHaveBeenCalledWith(config.path, expect.any(Function));
       expect(parseSpy).toHaveBeenCalledTimes(1);
@@ -180,7 +205,7 @@ describe('Level Changer', () => {
         cb(null, Buffer.from(JSON.stringify(levels)));
       });
 
-      await changeTrigger('File Read OK, JSON OK, Wrong Schema');
+      await changeTrigger();
       expect(FS_MOCK.readFile).toHaveBeenCalledTimes(1);
       expect(FS_MOCK.readFile).toHaveBeenCalledWith(config.path, expect.any(Function));
       expect(parseSpy).toHaveBeenCalledTimes(1);
@@ -197,7 +222,7 @@ describe('Level Changer', () => {
         cb(null, Buffer.from(JSON.stringify(levels)));
       });
 
-      await changeTrigger('File Read OK, JSON OK, Schema OK, only level');
+      await changeTrigger();
       expect(FS_MOCK.readFile).toHaveBeenCalledTimes(1);
       expect(FS_MOCK.readFile).toHaveBeenCalledWith(config.path, expect.any(Function));
       expect(parseSpy).toHaveBeenCalledTimes(1);
@@ -217,7 +242,7 @@ describe('Level Changer', () => {
         cb(null, Buffer.from(JSON.stringify(levels)));
       });
 
-      await changeTrigger('File Read OK, JSON OK, Schema OK, level and levels');
+      await changeTrigger();
       expect(FS_MOCK.readFile).toHaveBeenCalledTimes(1);
       expect(FS_MOCK.readFile).toHaveBeenCalledWith(config.path, expect.any(Function));
       expect(parseSpy).toHaveBeenCalledTimes(1);

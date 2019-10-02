@@ -28,7 +28,7 @@ import { basename, dirname } from 'path';
 import * as pino from 'pino';
 import { Logger, LoggerOptions } from 'pino';
 import { AppLogger } from '../interface/app.logger';
-import { DEFAULT_LOGGER_CONFIG } from './default.config';
+import { DEFAULT_LOGGER_CONFIG, DEFAULT_SENSITIVE_CONFIG } from './default.config';
 import { AppLoggerOptions } from '../interface/app.logger.options';
 import { NoopChanger } from '../levelChanger/noop.changer';
 import { LevelChanger } from '../interface/level.changer';
@@ -36,6 +36,7 @@ import { FileLevelChanger } from '../levelChanger/file.level.changer';
 import { HttpLogger, Options } from 'pino-http';
 import { requestSerializer, customLogLevel, DEFAULT_MIDDLEWARE_CONFIG } from '../http';
 import * as pinoHttp from 'pino-http';
+import { SensitiveConfig } from '../interface';
 export class LoggerFactory {
   private static readonly DIRNAME_LENGTH = require && require.main ? dirname(require.main.filename).length + 1 : 0;
   private static readonly FACTORY_FILENAME = basename(__filename);
@@ -43,22 +44,26 @@ export class LoggerFactory {
   private static CONFIG: AppLoggerOptions;
   private static PARENT_LOGGER: Logger;
   private static LOGGERS = new Map<string, Logger>();
-  private static LEVEL_CHANGER: LevelChanger = new NoopChanger();
+  private static LEVEL_CHANGER: LevelChanger;
 
   private static HTTP_LOGGER: HttpLogger;
 
   static forRoot(config: AppLoggerOptions) {
     this.CONFIG = { ...DEFAULT_LOGGER_CONFIG, ...config };
     this.PARENT_LOGGER = pino(this.CONFIG);
+    this.initializeLevelChanger();
+  }
 
+  private static initializeLevelChanger() {
     if (this.CONFIG.changeConfig) {
       const changerLogger: any = this.PARENT_LOGGER.child({
         className: FileLevelChanger.name
       });
       this.LEVEL_CHANGER = new FileLevelChanger(changerLogger, this.CONFIG.changeConfig, this.CONFIG.level || 'info');
-      this.LEVEL_CHANGER.initialize();
+    } else {
+      this.LEVEL_CHANGER = new NoopChanger();
     }
-    this.LEVEL_CHANGER.registerLogger('PARRENT_LOGGER', this.PARENT_LOGGER as any);
+    this.LEVEL_CHANGER.initialize();
   }
 
   static createLogger(className?: string): AppLogger {
@@ -69,11 +74,56 @@ export class LoggerFactory {
 
     let logger: any = this.LOGGERS.get(className);
     if (!logger) {
-      logger = this.PARENT_LOGGER.child({ className });
+      logger = this.createChildLogger(className);
       this.LOGGERS.set(className, logger);
       this.LEVEL_CHANGER.registerLogger(className, logger);
     }
-    return logger as any;
+    return logger;
+  }
+
+  private static createChildLogger(className: string) {
+    const logger: AppLogger = this.PARENT_LOGGER.child({ className }) as any;
+    return this.addSensitiveBindings(logger);
+  }
+
+  private static addSensitiveBindings(logger: AppLogger) {
+    const functionBindings = this.generateSensitiveFunctionBindings(logger as any);
+    logger.sensitive = functionBindings;
+    logger.sensitive.sensitive = logger.sensitive; // disable sensitive-ception
+    return logger;
+  }
+
+  private static generateSensitiveBinding(): { [key: string]: any } | undefined {
+    const sensitive = this.CONFIG.sensitive;
+
+    if (!sensitive) {
+      return undefined;
+    }
+
+    const { sensitiveName, sensitiveValue } = sensitive === true ? DEFAULT_SENSITIVE_CONFIG : sensitive;
+    if (!sensitiveName || !sensitiveValue) {
+      return undefined;
+    }
+
+    const sensitiveBinding: any = {};
+    sensitiveBinding[sensitiveName] = sensitiveValue;
+    return sensitiveBinding;
+  }
+
+  private static generateSensitiveFunctionBindings(logger: pino.Logger) {
+    const sensitiveBinding = this.generateSensitiveBinding();
+    const levels = ['log', 'verbose', ...Object.keys(pino.levels.values)];
+    const functionBindings = levels.reduce<any>(
+      (acc, level) => {
+        acc[level] = logger[level] && sensitiveBinding ? logger[level].bind(logger, sensitiveBinding) : logger[level];
+        return acc;
+      },
+      {
+        child: () => logger,
+        level: logger.level
+      }
+    );
+    return functionBindings;
   }
 
   static createHttpLoggerMiddleware(config?: LoggerOptions, httpConfig?: Options): HttpLogger {
