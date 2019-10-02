@@ -90,13 +90,14 @@ export class FileLevelChanger implements LevelChanger {
   };
 
   private handleChangeEvt = async (event: string, fileName: string) => {
-    if (event === ChangeEventType.update) {
-      return this.handleFileUpdate(fileName);
-    }
-
-    if (event === ChangeEventType.remove) {
-      this.logger.trace('Restarting watcher due to file removed');
-      return this.restartWatcher();
+    switch (event) {
+      case ChangeEventType.update:
+        return this.handleFileUpdate(fileName);
+      case ChangeEventType.remove:
+        this.logger.trace('Restarting watcher due to file removed');
+        return this.restartWatcher();
+      default:
+        this.logger.trace('Ignoring unknown event', event);
     }
   };
 

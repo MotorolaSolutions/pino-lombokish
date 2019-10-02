@@ -26,6 +26,8 @@
 
 import { LoggerOptions } from 'pino';
 import { LevelChangerConfig } from './level.changer.config';
+import { SensitiveConfig } from './sensitive.config';
 export interface AppLoggerOptions extends LoggerOptions {
   changeConfig?: LevelChangerConfig;
+  sensitive?: SensitiveConfig;
 }

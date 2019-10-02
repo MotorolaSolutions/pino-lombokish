@@ -1,7 +1,7 @@
 {
   "level": "info",
   "levels": {
-    "example.ts": "warn",
+    "example.ts": "info",
     "LevelChanger": "info",
     "http": "info"
   }

@@ -34,7 +34,7 @@ export abstract class AppLogger {
   abstract log(message: any, context?: string): void;
   abstract verbose?(message: any, context?: string): void;
 
-  // Pino Interface (+ some Nest Inteface)
+  // Pino Interface (+ some Nest Interface)
   abstract fatal: LogFunc;
   abstract error: LogFunc;
   abstract warn: LogFunc;
@@ -42,4 +42,6 @@ export abstract class AppLogger {
   abstract debug: LogFunc;
   abstract trace: LogFunc;
   abstract child(options: any): AppLogger;
+
+  sensitive: AppLogger;
 }

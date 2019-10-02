@@ -23,48 +23,9 @@
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
-import { createServer } from 'http';
-import { LoggerFactory, AppLogger, Logger } from '../';
-
-LoggerFactory.forRoot({
-  level: 'debug',
-  name: 'example',
-  changeConfig: {
-    path: './src/example/levels.json'
-  },
-  sensitive: true
-});
-
-class Foo {
-  @Logger()
-  private logger: AppLogger;
-
-  constructor() {
-    this.logger.info('This will show Foo as className');
-    this.logger.sensitive.info('This will add sensitive binding to log message');
-  }
+export interface SensitiveConfigObject {
+  sensitiveName: string;
+  sensitiveValue: string | number | boolean;
 }
 
-async function bootstrap() {
-  const logger = LoggerFactory.createLogger();
-  logger.info('This will show "example.ts" as className');
-  const loggerExplicit = LoggerFactory.createLogger('explicit');
-  loggerExplicit.info('This will show "explicit" as className');
-
-  const httpLogger = LoggerFactory.createHttpLoggerMiddleware();
-  const server = createServer((req, res) => {
-    httpLogger(req, res);
-    res.end('Hello');
-  });
-
-  const obj = new Foo();
-  server.listen(3000);
-
-  const interval = 3000;
-  setInterval(() => {
-    logger.info(`Logging every ${interval / 1000} seconds, change 'example.ts' level in levels.json to warn to disable`);
-  }, interval);
-}
-
-bootstrap();
+export type SensitiveConfig = boolean | SensitiveConfigObject;

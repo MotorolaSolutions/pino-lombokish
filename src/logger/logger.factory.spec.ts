@@ -30,11 +30,16 @@
 
 const PINO_MOCK: jest.Mock = jest.genMockFromModule('pino');
 const PINO_HTTP_MOCK: jest.Mock = jest.genMockFromModule('pino-http');
+const LEVEL_CHANGER_MOCK: any = jest.genMockFromModule('../levelChanger/file.level.changer');
+
 jest.mock('pino', () => PINO_MOCK);
 jest.mock('pino-http', () => PINO_HTTP_MOCK);
+jest.mock('../levelChanger/file.level.changer', () => LEVEL_CHANGER_MOCK);
 
 import { LoggerFactory } from './logger.factory';
 import { LoggerOptions } from 'pino';
+import './../levelChanger/file.level.changer';
+import { AppLoggerOptions } from '../interface';
 
 describe('LoggerFactory', () => {
   const PINO_LOGGER_MOCK = {
@@ -57,6 +62,20 @@ describe('LoggerFactory', () => {
     it('Should throw when forRoot not invoked', done => {
       expect(() => LoggerFactory.createLogger()).toThrowError();
       expect(PINO_MOCK).toHaveBeenCalledTimes(0);
+      done();
+    });
+
+    it('Should Initialize Level Changer if enabled', done => {
+      LoggerFactory.forRoot({
+        level: 'info',
+        prettyPrint: false,
+        name: 'App',
+        changeConfig: {
+          path: './foo/bar'
+        }
+      });
+      expect(LEVEL_CHANGER_MOCK.FileLevelChanger).toHaveBeenCalledTimes(1);
+      expect(LEVEL_CHANGER_MOCK.FileLevelChanger.mock.instances[0].initialize).toHaveBeenCalledTimes(1);
       done();
     });
   });
@@ -101,6 +120,7 @@ describe('LoggerFactory', () => {
           logger: {}
         };
       });
+      (LoggerFactory as any).HTTP_LOGGER = undefined;
     });
 
     it('Should create logger middleware', done => {
@@ -108,6 +128,91 @@ describe('LoggerFactory', () => {
 
       expect(PINO_MOCK).toHaveBeenCalledTimes(1);
       expect(PINO_HTTP_MOCK).toHaveBeenCalledTimes(1);
+      done();
+    });
+
+    it('Should not create HTTP Logger instance once it was created', done => {
+      LoggerFactory.createHttpLoggerMiddleware();
+      LoggerFactory.createHttpLoggerMiddleware();
+      expect(PINO_MOCK).toHaveBeenCalledTimes(1);
+      expect(PINO_HTTP_MOCK).toHaveBeenCalledTimes(1);
+      done();
+    });
+  });
+
+  describe('Sensitive Logging', () => {
+    it('Should create default sensitive binding', done => {
+      LoggerFactory.forRoot({
+        sensitive: true
+      });
+      const logger = LoggerFactory.createLogger('DefaultSensitive');
+      expect(logger.sensitive).toBeDefined();
+      expect(logger.sensitive).not.toBe(logger);
+      expect(logger.sensitive.sensitive).toBe(logger.sensitive);
+
+      const spy = jest.spyOn(logger, 'info');
+      logger.sensitive.info('foo');
+
+      expect(logger.info).toHaveBeenCalledWith({ isSensitive: true }, 'foo');
+      spy.mockRestore();
+      done();
+    });
+
+    it('Should create User Provided sensitive binding', done => {
+      LoggerFactory.forRoot({
+        sensitive: {
+          sensitiveName: 'mySensitive',
+          sensitiveValue: 'myValue'
+        }
+      });
+
+      const logger = LoggerFactory.createLogger('UserSensitive');
+      expect(logger.sensitive).toBeDefined();
+      expect(logger.sensitive).not.toBe(logger);
+      const spy = jest.spyOn(logger, 'info');
+      logger.sensitive.info('foo');
+
+      expect(logger.info).toHaveBeenCalledWith({ mySensitive: 'myValue' }, 'foo');
+      spy.mockRestore();
+      done();
+    });
+
+    it('Should not create sensitive binding when sensitive is false', done => {
+      LoggerFactory.forRoot({
+        sensitive: false
+      });
+      const logger = LoggerFactory.createLogger('SensitiveFalse');
+      const spy = jest.spyOn(logger, 'info');
+      logger.sensitive.info('foo');
+      expect(logger.info).toHaveBeenCalledWith('foo');
+      spy.mockRestore();
+      done();
+    });
+
+    it('Should not create sensitive binding when sensitive is not provided', done => {
+      LoggerFactory.forRoot({});
+      const logger = LoggerFactory.createLogger('NoSensitive');
+      const spy = jest.spyOn(logger, 'info');
+      logger.sensitive.info('foo');
+      expect(logger.info).toHaveBeenCalledWith('foo');
+      spy.mockRestore();
+      done();
+    });
+
+    it('Should not create sensitive binding when bogus config was provided', done => {
+      const sensitiveConfig: any = {
+        someName: 'some',
+        someValue: 'some'
+      };
+
+      LoggerFactory.forRoot({
+        sensitive: sensitiveConfig
+      });
+      const logger = LoggerFactory.createLogger('NoSensitiveBogusConfig');
+      const spy = jest.spyOn(logger, 'info');
+      logger.sensitive.info('foo');
+      expect(logger.info).toHaveBeenCalledWith('foo');
+      spy.mockRestore();
       done();
     });
   });
