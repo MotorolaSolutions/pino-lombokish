@@ -15,9 +15,10 @@ Also Implements [NestJS](https://nestjs.com/) interface.
     - [As class member (Lombok'ish style)](#UsageClassMember)
 3. [HTTP Middleware](#HTTPMiddleware)
 4. [Level Changer](#LevelChanger)
-5. [Default Configurations](#DefaultConfigurations)
-6. [Acknowledgments](#Acknowledgements)
-7. [License](#License)
+5. [Marking Sensitive Logs](#SensitiveLogging)
+6. [Default Configurations](#DefaultConfigurations)
+7. [Acknowledgments](#Acknowledgements)
+8. [License](#License)
 
 <a  id="Installation"></a>
 ## Installation
@@ -77,8 +78,8 @@ import { LoggerFactory } from  'pino-lombokish';
 const  logger = LoggerFactory.createLogger('foo');
 logger.info('Will log "className": "foo" in Your Log');
 ```
-<a  id="UsageClassMember"></a>
-### As class member (Lombok'ish style)
+<a id="UsageClassMember"></a>
+### As class member - Lombok(ish) style
 ```typescript
 // foo.ts
 import { Logger, AppLogger } from  'pino-lombokish';
@@ -96,7 +97,7 @@ export  class  Foo {
 }
 ```
 
-<a  id="HTTPMiddleware"></a>
+<a id="HTTPMiddleware"></a>
 ## HTTP Middleware.
 Creates [Pino Http](https://www.npmjs.com/package/pino-http) NodeJS/express middleware
 ```typescript
