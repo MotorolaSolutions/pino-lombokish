@@ -125,6 +125,7 @@ app.listen(3000);
     - Authorization
     - x-original-uri
     - x-original-url
+    - sec-websocket-protocol
 2. HTTP URL Parameters (via pino http serializers option)
     - access_token
 
@@ -231,7 +232,8 @@ export  const  DEFAULT_MIDDLEWARE_CONFIG: pino.LoggerOptions = {
     paths: [
       'req.headers.authorization',
       'req.headers["x-original-uri"]',
-      'req.headers["x-original-url"]'
+      'req.headers["x-original-url"]',
+      'req.headers["sec-websocket-protocol"]'
     ]
   }
 };

@@ -28,6 +28,11 @@ import { LoggerOptions } from 'pino';
 
 export const DEFAULT_MIDDLEWARE_CONFIG: LoggerOptions = {
   redact: {
-    paths: ['req.headers.authorization', 'req.headers["x-original-uri"]', 'req.headers["x-original-url"]']
+    paths: [
+      'req.headers.authorization',
+      'req.headers["x-original-uri"]',
+      'req.headers["x-original-url"]',
+      'req.headers["sec-websocket-protocol"]'
+    ]
   }
 };
